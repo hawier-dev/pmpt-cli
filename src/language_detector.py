@@ -100,16 +100,17 @@ class LanguageDetector:
         return max(language_scores.items(), key=lambda x: x[1])[0]
     
     def _detect_framework(self) -> Optional[str]:
-        """Detect specific frameworks or technologies"""
+        """Detect specific frameworks or technologies (non-recursive)"""
         for framework, indicators in self.FRAMEWORK_INDICATORS.items():
             matches = 0
             for indicator in indicators:
                 if indicator.endswith('/'):
-                    # Directory indicator
-                    if (self.directory / indicator.rstrip('/')).is_dir():
+                    # Directory indicator - only check direct subdirectories
+                    dir_name = indicator.rstrip('/')
+                    if (self.directory / dir_name).is_dir():
                         matches += 1
                 else:
-                    # File indicator
+                    # File indicator - only check current directory
                     if (self.directory / indicator).exists():
                         matches += 1
             
@@ -120,11 +121,12 @@ class LanguageDetector:
         return None
     
     def _count_extensions(self) -> Dict[str, int]:
-        """Count file extensions in the directory"""
+        """Count file extensions in the directory (non-recursive)"""
         extension_counts = Counter()
         
         try:
-            for item in self.directory.rglob('*'):
+            # Only scan current directory, not subdirectories
+            for item in self.directory.iterdir():
                 if item.is_file():
                     # Skip hidden files and common non-code files
                     if item.name.startswith('.') and item.name not in ['Dockerfile', '.dockerfile']:
@@ -135,6 +137,23 @@ class LanguageDetector:
                         extension_counts[item.name.lower()] += 1
                     elif item.suffix:
                         extension_counts[item.suffix.lower()] += 1
+                        
+            # Also check common subdirectories for framework detection (limited depth)
+            common_dirs = ['src', 'lib', 'app', 'components', 'pages', 'views', 'controllers']
+            for dir_name in common_dirs:
+                subdir = self.directory / dir_name
+                if subdir.is_dir():
+                    try:
+                        # Only count a few files from each common directory
+                        file_count = 0
+                        for item in subdir.iterdir():
+                            if item.is_file() and file_count < 10:  # Limit to 10 files per subdir
+                                if not item.name.startswith('.') and item.suffix:
+                                    extension_counts[item.suffix.lower()] += 1
+                                    file_count += 1
+                    except PermissionError:
+                        continue
+                        
         except PermissionError:
             pass
         
