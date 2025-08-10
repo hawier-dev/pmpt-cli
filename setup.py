@@ -18,6 +18,9 @@ setup(
             "pmpt=main:main",
         ],
     },
+    author="hawier-dev",
+    author_email="",
+    url="https://github.com/hawier-dev/pmpt-cli",
     classifiers=[
         "Development Status :: 4 - Beta",
         "Intended Audience :: Developers",
