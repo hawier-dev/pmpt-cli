@@ -2,7 +2,7 @@
 
 AI-powered prompt enhancement tool that improves your prompts using OpenAI, Anthropic, and OpenRouter APIs.
 
-![Demo](demo.mp4)
+![Demo](https://github.com/hawier-dev/pmpt-cli/raw/refs/heads/main/demo.mp4)
 
 ## Features
 
