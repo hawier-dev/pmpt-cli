@@ -40,32 +40,20 @@ class PromptEnhancerCLI:
             "gentle": {
                 "name": "Gentle",
                 "color": "#90EE90",
-                "description": "Softly improves grammar and clarity while keeping original tone",
-                "prompt": "Gently improve the user's prompt by fixing grammar, improving clarity, and making it more specific while maintaining the original intent and tone. Return ONLY the enhanced prompt."
+                "description": "Light syntax, grammar and clarity improvements without changing tone",
+                "prompt": "Gently improve the syntax, grammar and clarity of this prompt while maintaining the original tone and intent. Fix language errors and make it more precise, but don't significantly change the content. Return ONLY the enhanced prompt."
             },
-            "professional": {
-                "name": "Professional", 
+            "structured": {
+                "name": "Structured", 
                 "color": "#4169E1",
-                "description": "Transforms prompts into formal, business-appropriate language",
-                "prompt": "Transform the user's prompt into a clear, professional, and well-structured request suitable for business or formal contexts. Return ONLY the enhanced prompt."
+                "description": "Improves structure with Markdown formatting and logical layout",
+                "prompt": "Rewrite this prompt with better structure using Markdown formatting. Organize content logically with headers, lists, highlights and sections. Keep all important content but present it in a clearer and more organized way. Return ONLY the enhanced prompt."
             },
             "creative": {
                 "name": "Creative",
                 "color": "#FF69B4", 
-                "description": "Adds imaginative flair and vivid descriptions to prompts",
-                "prompt": "Enhance the user's prompt by adding creative flair, vivid descriptions, and imaginative elements while preserving the core request. Return ONLY the enhanced prompt."
-            },
-            "technical": {
-                "name": "Technical",
-                "color": "#FFA500",
-                "description": "Makes prompts precise with technical specifications and details",
-                "prompt": "Refine the user's prompt to be precise, detailed, and technically accurate with clear specifications and requirements. Return ONLY the enhanced prompt."
-            },
-            "concise": {
-                "name": "Concise",
-                "color": "#20B2AA",
-                "description": "Reduces prompts to essential information, brief and clear",
-                "prompt": "Make the user's prompt as clear and brief as possible while retaining all essential information and meaning. Return ONLY the enhanced prompt."
+                "description": "Adds lots of creativity and significantly transforms the prompt",
+                "prompt": "Completely rewrite this prompt in a creative way. Add vivid descriptions, metaphors, analogies, examples and imaginative elements. Expand the content with inspiring details and alternative perspectives. Keep the main intent but make the prompt much more engaging and creative. Return ONLY the enhanced prompt."
             }
         }
         
