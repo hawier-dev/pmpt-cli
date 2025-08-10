@@ -2,8 +2,7 @@
 
 AI-powered prompt enhancement tool that improves your prompts using OpenAI, Anthropic, and OpenRouter APIs.
 
-<!-- Demo GIF placeholder -->
-![Demo](demo.gif)
+![Demo](demo.mp4)
 
 ## Features
 
