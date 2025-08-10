@@ -1,75 +1,98 @@
 # PMPT CLI
 
-A beautiful CLI tool that enhances your prompts using AI providers like OpenAI, Anthropic, and OpenRouter.
+AI-powered prompt enhancement tool that improves your prompts using OpenAI, Anthropic, and OpenRouter APIs.
+
+<!-- Demo GIF placeholder -->
+![Demo](demo.gif)
 
 ## Features
 
-- 🤖 Support for multiple AI providers:
-  - OpenAI (GPT-4, etc.)
-  - Anthropic (Claude)
-  - OpenRouter (access to various models)
-- ⚙️ Easy configuration management
-- 📋 Automatic clipboard integration
-- 🔄 Interactive prompt enhancement workflow
+- 🤖 **Multiple AI Providers**: OpenAI, Anthropic (Claude), OpenRouter
+- 🎨 **Enhancement Styles**: Gentle, Professional, Creative, Technical, Concise  
+- 🔍 **Smart Language Detection**: Automatically detects your project's programming language
+- ⌨️ **Command Completion**: Tab completion for commands
+- 📋 **Clipboard Integration**: Automatic copying to clipboard
+- ⚙️ **Easy Configuration**: First-run setup wizard
 
 ## Installation
 
-1. Clone or download the repository
-2. Install dependencies:
-   ```bash
-   pip install -r requirements.txt
-   ```
+Run the installation script:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/hawier-dev/pmpt-cli/main/install.sh | bash
+```
+
+Or install manually:
+
+```bash
+git clone https://github.com/hawier-dev/pmpt-cli.git
+cd pmpt-cli  
+pip install -e .
+```
 
 ## Usage
 
-Run the tool:
+Simply run:
 ```bash
-python main.py
+pmpt
 ```
 
 ### First Time Setup
-
-When you first run the tool, you'll need to configure your API key:
-1. The tool will prompt you for your API key
-2. Optionally configure the base URL and model
-3. Settings are saved to `~/.pmpt-cli/config.json`
+The tool will automatically guide you through configuration:
+1. Choose your AI provider (OpenAI/Anthropic/OpenRouter/Custom)
+2. Enter your API key
+3. Specify your model
+4. Settings are saved to `~/.pmpt-cli/config.json`
 
 ### Commands
+- **Enter your prompt** - Get enhanced version
+- **Enter** - New line in multiline input
+- **Meta+Enter** - Process prompt  
+- **/style** - Change enhancement style
+- **/config** - Reconfigure settings
+- **/quit** or **Ctrl+C** - Exit
 
-- Enter any prompt to enhance it
-- Type `config` to reconfigure settings  
-- Type `quit` to exit
-- Use Ctrl+C to exit at any time
+### Enhancement Styles
+- **Gentle**: Softly improves grammar and clarity
+- **Professional**: Formal, business-appropriate language
+- **Creative**: Adds imaginative flair and descriptions
+- **Technical**: Precise with technical specifications  
+- **Concise**: Brief and essential information only
+
+## Language Detection
+
+PMPT CLI automatically detects your project's programming language and framework:
+- Scans current directory for file extensions
+- Recognizes frameworks (Flutter, React, Django, etc.)
+- Provides context-aware prompt enhancement
 
 ## Configuration
 
-The tool supports three providers:
+### Supported Providers
+- **OpenAI**: GPT models via OpenAI API
+- **Anthropic**: Claude models via Anthropic API  
+- **OpenRouter**: Access to various models
+- **Custom**: Any OpenAI-compatible API
 
-### OpenAI
-- Default model: `gpt-4o`
-- Base URL: `https://api.openai.com/v1`
-- Requires OpenAI API key
-
-### Anthropic
-- Default model: `claude-3-5-sonnet-20241022`  
-- Base URL: `https://api.anthropic.com`
-- Requires Anthropic API key
-
-### OpenRouter
-- Default model: `anthropic/claude-3.5-sonnet`
-- Base URL: `https://openrouter.ai/api/v1`
-- Requires OpenRouter API key
-
-## Development
-
-Install in development mode:
-```bash
-pip install -e .
+### Configuration File
+Located at `~/.pmpt-cli/config.json`:
+```json
+{
+  "api_key": "your-api-key",
+  "provider": "openai", 
+  "model": "gpt-4o",
+  "current_style": "gentle"
+}
 ```
 
 ## Requirements
 
 - Python 3.8+
-- aiohttp
-- prompt-toolkit
-- rich
+- API key for chosen provider
+
+## Development
+
+```bash
+git clone https://github.com/hawier-dev/pmpt-cli.git
+cd pmpt-cli
+pip install -e .
