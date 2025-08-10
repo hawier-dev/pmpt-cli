@@ -38,6 +38,10 @@ class Config:
     def get_model(self) -> str:
         """Get model - must be explicitly set"""
         return self.model
+    
+    def get_api_key(self) -> str:
+        """Get API key"""
+        return self.api_key
 
 
 class ConfigManager:
