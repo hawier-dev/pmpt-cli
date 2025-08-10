@@ -52,20 +52,6 @@ The tool will automatically guide you through configuration:
 - **/config** - Reconfigure settings
 - **/quit** or **Ctrl+C** - Exit
 
-### Enhancement Styles
-- **Gentle**: Softly improves grammar and clarity
-- **Professional**: Formal, business-appropriate language
-- **Creative**: Adds imaginative flair and descriptions
-- **Technical**: Precise with technical specifications  
-- **Concise**: Brief and essential information only
-
-## Language Detection
-
-PMPT CLI automatically detects your project's programming language and framework:
-- Scans current directory for file extensions
-- Recognizes frameworks (Flutter, React, Django, etc.)
-- Provides context-aware prompt enhancement
-
 ## Configuration
 
 ### Supported Providers
@@ -85,14 +71,3 @@ Located at `~/.pmpt-cli/config.json`:
 }
 ```
 
-## Requirements
-
-- Python 3.8+
-- API key for chosen provider
-
-## Development
-
-```bash
-git clone https://github.com/hawier-dev/pmpt-cli.git
-cd pmpt-cli
-pip install -e .
