@@ -7,7 +7,7 @@ from packaging import version
 from typing import Optional, Dict, Any
 
 
-__version__ = "0.1.0"
+__version__ = "0.1.1"
 
 
 class UpdateChecker:
