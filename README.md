@@ -44,14 +44,6 @@ The tool will automatically guide you through configuration:
 3. Specify your model
 4. Settings are saved to `~/.pmpt-cli/config.json`
 
-### Commands
-- **Enter your prompt** - Get enhanced version
-- **Enter** - New line in multiline input
-- **Meta+Enter** - Process prompt  
-- **/style** - Change enhancement style
-- **/config** - Reconfigure settings
-- **/quit** or **Ctrl+C** - Exit
-
 ## Configuration
 
 ### Supported Providers
