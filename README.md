@@ -8,7 +8,7 @@ AI-powered prompt enhancement tool that improves your prompts using OpenAI, Anth
 ## Features
 
 - 🤖 **Multiple AI Providers**: OpenAI, Anthropic (Claude), OpenRouter
-- 🎨 **Enhancement Styles**: Gentle, Professional, Creative, Technical, Concise  
+- 🎨 **Enhancement Styles**: Gentle, Structured, Creative  
 - 🔍 **Smart Language Detection**: Automatically detects your project's programming language
 - ⌨️ **Command Completion**: Tab completion for commands
 - 📋 **Clipboard Integration**: Automatic copying to clipboard
@@ -63,3 +63,19 @@ Located at `~/.pmpt-cli/config.json`:
 }
 ```
 
+## Requirements
+
+- Python 3.8+
+- API key for chosen provider
+
+## Development
+
+```bash
+git clone https://github.com/hawier-dev/pmpt-cli.git
+cd pmpt-cli
+pip install -e .
+```
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
