@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="pmpt-cli",
-    version="0.1.1",
+    version="0.1.2",
     description="CLI tool for AI-powered prompt enhancement",
     packages=find_packages(),
     install_requires=[
