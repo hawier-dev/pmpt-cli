@@ -15,6 +15,7 @@ from .config import Config, ConfigManager
 from .providers import APIClient
 from .clipboard import ClipboardManager
 from .language_detector import LanguageDetector
+from .version import UpdateChecker, __version__
 
 
 class PromptEnhancerCLI:
@@ -25,6 +26,7 @@ class PromptEnhancerCLI:
         self.config_manager = ConfigManager()
         self.clipboard_manager = ClipboardManager()
         self.language_detector = LanguageDetector()
+        self.update_checker = UpdateChecker()
         self.config = self.config_manager.load_config()
         
         self.style = Style.from_dict({
@@ -62,7 +64,7 @@ class PromptEnhancerCLI:
         
         class CommandCompleter(Completer):
             def __init__(self):
-                self.commands = ['/style', '/config', '/quit']
+                self.commands = ['/style', '/config', '/quit', '/version']
             
             def get_completions(self, document, complete_event):
                 text_before_cursor = document.text_before_cursor
@@ -160,6 +162,7 @@ class PromptEnhancerCLI:
             "[bold]Available commands:[/bold]\n"
             "• [green]/config[/green] - Settings\n"
             "• [green]/style[/green] - Change enhancement style\n"
+            "• [green]/version[/green] - Show version info\n"
             "• [green]/quit[/green] - Exit application",
             title="🚀 Welcome",
             title_align="left",
