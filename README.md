@@ -1,10 +1,9 @@
-# PMPT CLI - Prompt Enhancement Tool
+# PMPT CLI
 
 A beautiful CLI tool that enhances your prompts using AI providers like OpenAI, Anthropic, and OpenRouter.
 
 ## Features
 
-- 🎨 Beautiful CLI interface with Rich and prompt_toolkit
 - 🤖 Support for multiple AI providers:
   - OpenAI (GPT-4, etc.)
   - Anthropic (Claude)
