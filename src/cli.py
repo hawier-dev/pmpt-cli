@@ -54,8 +54,8 @@ class PromptEnhancerCLI:
             "creative": {
                 "name": "Creative",
                 "color": "#FF69B4", 
-                "description": "Adds lots of creativity and significantly transforms the prompt",
-                "prompt": "Completely rewrite this prompt in a creative way. Add vivid descriptions, metaphors, analogies, examples and imaginative elements. Expand the content with inspiring details and alternative perspectives. Keep the main intent but make the prompt much more engaging and creative. Return ONLY the enhanced prompt."
+                "description": "Adds creative flair while preserving the core request",
+                "prompt": "Enhance this prompt by keeping the user's core request and intent unchanged, but add creative elements to make it more engaging. You can enrich it with vivid examples, interesting analogies, compelling details, or imaginative context that supports the original goal. Feel free to be creative with language and add flair, but always preserve what the user is fundamentally asking for. Return ONLY the enhanced prompt."
             }
         }
         
@@ -112,13 +112,10 @@ class PromptEnhancerCLI:
                     if not user_prompt:
                         continue
                     
-                    # Enhance prompt
-                    enhanced_prompt = await self._enhance_prompt(user_prompt)
+                    # Enhance prompt with streaming
+                    enhanced_prompt = await self._enhance_prompt_stream(user_prompt)
                     if not enhanced_prompt:
                         continue
-                    
-                    # Show enhanced prompt
-                    self._display_enhanced_prompt(enhanced_prompt)
                     
                     # Ask to copy to clipboard
                     if Confirm.ask("[yellow]Copy enhanced prompt to clipboard?[/yellow]", default=True):
@@ -150,7 +147,7 @@ class PromptEnhancerCLI:
             subtitle = f"Base URL: {self.config.get_base_url()} | Model: {self.config.get_model()} | Style: {current_style_name}"
         
         if detected_language:
-            subtitle += f" | Language: {detected_language.title()}"
+            subtitle += f" | Environment: {detected_language.title()}"
         
         panel = Panel(
             f"[bold cyan]{title}[/bold cyan]\n"
@@ -224,6 +221,12 @@ class PromptEnhancerCLI:
                 self.console.print("\n[bold cyan]Custom Provider Configuration[/bold cyan]")
                 base_url = await self.prompt_session.prompt_async("Enter base URL: ", is_password=False)
                 base_url = base_url.strip()
+                
+                # Remove /chat/completions if user accidentally included it
+                if base_url.endswith('/chat/completions'):
+                    base_url = base_url[:-len('/chat/completions')]
+                    self.console.print("[yellow]ℹ Automatically removed /chat/completions from URL[/yellow]")
+                
                 if not base_url:
                     self.console.print("[red]Base URL is required[/red]")
                     return False
@@ -349,8 +352,8 @@ class PromptEnhancerCLI:
         except EOFError:
             return None
     
-    async def _enhance_prompt(self, user_prompt: str) -> Optional[str]:
-        """Enhance user prompt using AI"""
+    async def _enhance_prompt_stream(self, user_prompt: str) -> Optional[str]:
+        """Enhance user prompt using AI with streaming"""
         if not user_prompt:
             return ""
         
@@ -364,27 +367,19 @@ class PromptEnhancerCLI:
             if language_context:
                 enhanced_system_prompt += f" The user is working on a {language_context}, so consider this context when enhancing their prompt."
             
-            with self.console.status(f"[bold green]Enhancing prompt ({current_style['name']})..."):
-                enhanced = await client.enhance_prompt(user_prompt, enhanced_system_prompt)
+            # Show label first
+            self.console.print(f"\n[bold green]Enhanced Prompt ({current_style['name']}):[/bold green]")
             
-            return enhanced
+            # Stream the response
+            enhanced_prompt = ""
+            async for chunk in client.enhance_prompt_stream(user_prompt, enhanced_system_prompt):
+                self.console.print(chunk, end="")
+                enhanced_prompt += chunk
+            
+            self.console.print()  # New line after streaming
+            return enhanced_prompt
             
         except Exception as e:
             self.console.print(f"[red]Enhancement failed: {e}[/red]")
             return None
     
-    def _display_enhanced_prompt(self, enhanced_prompt: str):
-        """Display the enhanced prompt"""
-        current_style = self.enhancement_styles[self.config.current_style]
-        
-        # Create white text for the prompt content
-        styled_prompt = Text(enhanced_prompt, style="white")
-        
-        panel = Panel(
-            styled_prompt,
-            title=f"Enhanced Prompt ({current_style['name']})",
-            border_style="green",
-            title_align="left"
-        )
-        self.console.print("\n")
-        self.console.print(panel)
