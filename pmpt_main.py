@@ -47,6 +47,8 @@ def update():
             
             click.echo(f"\n🔄 To update, run:")
             click.echo(f"pip install --upgrade pmpt-cli")
+            click.echo(f"\nOr use install script:")
+            click.echo(f"curl -fsSL https://raw.githubusercontent.com/hawier-dev/pmpt-cli/main/install.sh | bash")
             click.echo(f"\n📥 Or download manually from: {update_info['release_url']}")
         else:
             click.echo(f"✅ You're running the latest version ({__version__})")
