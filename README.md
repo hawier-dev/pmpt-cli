@@ -8,7 +8,7 @@ AI-powered prompt enhancement tool that improves your prompts using OpenAI, Anth
 
 - 🤖 **Multiple AI Providers**: OpenAI, Anthropic (Claude), OpenRouter
 - 🎨 **Enhancement Styles**: Gentle, Structured, Creative  
-- 🔍 **Smart Language Detection**: Automatically detects your project's programming language
+- 🔍 **Smart Environment Detection**: Automatically detects your project's programming environment
 - ⌨️ **Command Completion**: Tab completion for commands
 - 📋 **Clipboard Integration**: Automatic copying to clipboard
 - ⚙️ **Easy Configuration**: First-run setup wizard
