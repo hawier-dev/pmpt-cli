@@ -15,6 +15,12 @@ AI-powered prompt enhancement tool that improves your prompts using OpenAI, Anth
 
 ## Installation
 
+### Via pip (Recommended)
+
+```bash
+pip install pmpt-cli
+```
+
 ### Linux/macOS (Bash)
 
 Run the installation script:
