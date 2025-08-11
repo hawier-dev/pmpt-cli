@@ -8,12 +8,14 @@ AI-powered prompt enhancement tool that improves your prompts using OpenAI, Anth
 
 - 🤖 **Multiple AI Providers**: OpenAI, Anthropic (Claude), OpenRouter
 - 🎨 **Enhancement Styles**: Gentle, Structured, Creative  
-- 🔍 **Smart Language Detection**: Automatically detects your project's programming language
+- 🔍 **Smart Environment Detection**: Automatically detects your project's programming environment
 - ⌨️ **Command Completion**: Tab completion for commands
 - 📋 **Clipboard Integration**: Automatic copying to clipboard
 - ⚙️ **Easy Configuration**: First-run setup wizard
 
 ## Installation
+
+### Linux/macOS (Bash)
 
 Run the installation script:
 
@@ -21,7 +23,21 @@ Run the installation script:
 curl -fsSL https://raw.githubusercontent.com/hawier-dev/pmpt-cli/main/install.sh | bash
 ```
 
-Or install manually:
+### Windows (PowerShell)
+
+Run the PowerShell installation script:
+
+```powershell
+iwr -useb https://raw.githubusercontent.com/hawier-dev/pmpt-cli/main/install.ps1 | iex
+```
+
+Or run with force overwrite (if already installed):
+
+```powershell
+iwr -useb https://raw.githubusercontent.com/hawier-dev/pmpt-cli/main/install.ps1 | iex -ArgumentList "-Force"
+```
+
+### Manual Installation
 
 ```bash
 git clone https://github.com/hawier-dev/pmpt-cli.git
@@ -64,8 +80,14 @@ Located at `~/.pmpt-cli/config.json`:
 
 ## Requirements
 
-- Python 3.8+
-- API key for chosen provider
+- **Python 3.8+** (add to PATH during installation)
+- **Git** (for installation scripts)
+- **API key** for chosen provider (OpenAI, Anthropic, OpenRouter, etc.)
+
+### Windows Users
+- Ensure Python is added to PATH during installation
+- Run PowerShell as Administrator if installation fails
+- Git for Windows: https://git-scm.com/download/win
 
 ## Development
 

@@ -54,8 +54,8 @@ class PromptEnhancerCLI:
             "creative": {
                 "name": "Creative",
                 "color": "#FF69B4", 
-                "description": "Adds lots of creativity and significantly transforms the prompt",
-                "prompt": "Completely rewrite this prompt in a creative way. Add vivid descriptions, metaphors, analogies, examples and imaginative elements. Expand the content with inspiring details and alternative perspectives. Keep the main intent but make the prompt much more engaging and creative. Return ONLY the enhanced prompt."
+                "description": "Adds creative flair while preserving the core request",
+                "prompt": "Enhance this prompt by keeping the user's core request and intent unchanged, but add creative elements to make it more engaging. You can enrich it with vivid examples, interesting analogies, compelling details, or imaginative context that supports the original goal. Feel free to be creative with language and add flair, but always preserve what the user is fundamentally asking for. Return ONLY the enhanced prompt."
             }
         }
         
@@ -64,7 +64,7 @@ class PromptEnhancerCLI:
         
         class CommandCompleter(Completer):
             def __init__(self):
-                self.commands = ['/style', '/config', '/quit', '/version']
+                self.commands = ['/help', '/style', '/quit', '/version']
             
             def get_completions(self, document, complete_event):
                 text_before_cursor = document.text_before_cursor
@@ -80,10 +80,16 @@ class PromptEnhancerCLI:
         
         completer = CommandCompleter()
         
-        # Create prompt session with multiline support and completion
+        # Create prompt session with multiline support for main prompts
         self.prompt_session = PromptSession(
             multiline=True,
             completer=completer
+        )
+        
+        # Create single-line prompt session for configuration inputs
+        self.config_prompt_session = PromptSession(
+            multiline=False,
+            completer=None
         )
     
     async def run(self):
@@ -112,13 +118,10 @@ class PromptEnhancerCLI:
                     if not user_prompt:
                         continue
                     
-                    # Enhance prompt
-                    enhanced_prompt = await self._enhance_prompt(user_prompt)
+                    # Enhance prompt with streaming
+                    enhanced_prompt = await self._enhance_prompt_stream(user_prompt)
                     if not enhanced_prompt:
                         continue
-                    
-                    # Show enhanced prompt
-                    self._display_enhanced_prompt(enhanced_prompt)
                     
                     # Ask to copy to clipboard
                     if Confirm.ask("[yellow]Copy enhanced prompt to clipboard?[/yellow]", default=True):
@@ -150,7 +153,7 @@ class PromptEnhancerCLI:
             subtitle = f"Base URL: {self.config.get_base_url()} | Model: {self.config.get_model()} | Style: {current_style_name}"
         
         if detected_language:
-            subtitle += f" | Language: {detected_language.title()}"
+            subtitle += f" | Environment: {detected_language.title()}"
         
         panel = Panel(
             f"[bold cyan]{title}[/bold cyan]\n"
@@ -160,10 +163,13 @@ class PromptEnhancerCLI:
             "• [yellow]Enter[/yellow] - New line\n"
             "• [yellow]Meta+Enter[/yellow] - Process prompt\n\n"
             "[bold]Available commands:[/bold]\n"
-            "• [green]/config[/green] - Settings\n"
+            "• [green]/help[/green] - Show detailed help\n"
             "• [green]/style[/green] - Change enhancement style\n"
             "• [green]/version[/green] - Show version info\n"
-            "• [green]/quit[/green] - Exit application",
+            "• [green]/quit[/green] - Exit application\n\n"
+            "[bold]External commands:[/bold]\n"
+            "• [cyan]pmpt config[/cyan] - Configure settings\n"
+            "• [cyan]pmpt update[/cyan] - Check for updates",
             title="🚀 Welcome",
             title_align="left",
             border_style="cyan",
@@ -222,8 +228,14 @@ class PromptEnhancerCLI:
             # Configure provider or custom URL
             if provider_choice == "custom":
                 self.console.print("\n[bold cyan]Custom Provider Configuration[/bold cyan]")
-                base_url = await self.prompt_session.prompt_async("Enter base URL: ", is_password=False)
+                base_url = await self.config_prompt_session.prompt_async("Enter base URL: ", is_password=False)
                 base_url = base_url.strip()
+                
+                # Remove /chat/completions if user accidentally included it
+                if base_url.endswith('/chat/completions'):
+                    base_url = base_url[:-len('/chat/completions')]
+                    self.console.print("[yellow]ℹ Automatically removed /chat/completions from URL[/yellow]")
+                
                 if not base_url:
                     self.console.print("[red]Base URL is required[/red]")
                     return False
@@ -238,7 +250,7 @@ class PromptEnhancerCLI:
             
             # Step 2: Get API key
             self.console.print("\n[bold cyan]Step 2: API Key[/bold cyan]")
-            api_key = await self.prompt_session.prompt_async("Enter your API key: ", is_password=True)
+            api_key = await self.config_prompt_session.prompt_async("Enter your API key: ", is_password=True)
             api_key = api_key.strip()
             if not api_key:
                 self.console.print("[red]API key is required[/red]")
@@ -247,7 +259,7 @@ class PromptEnhancerCLI:
             # Step 3: Get model
             self.console.print("\n[bold cyan]Step 3: Model Name[/bold cyan]")
             
-            model = await self.prompt_session.prompt_async("Enter model name: ", is_password=False)
+            model = await self.config_prompt_session.prompt_async("Enter model name: ", is_password=False)
             model = model.strip()
             if not model:
                 self.console.print("[red]Model is required[/red]")
@@ -297,6 +309,57 @@ class PromptEnhancerCLI:
         except KeyboardInterrupt:
             pass
 
+    def _show_help(self):
+        """Show help information"""
+        self.console.print("\n[bold cyan]📖 PMPT CLI Help[/bold cyan]")
+        self.console.print("=" * 50)
+        
+        # Commands section
+        self.console.print("\n[bold yellow]🔧 Available Commands:[/bold yellow]")
+        self.console.print("  [cyan]/help[/cyan]    - Show this help message")
+        self.console.print("  [cyan]/style[/cyan]   - Change enhancement style (Gentle/Structured/Creative)")
+        self.console.print("  [cyan]/version[/cyan] - Show version information")
+        self.console.print("  [cyan]/quit[/cyan]    - Exit the application")
+        
+        # Usage section  
+        self.console.print("\n[bold yellow]💡 How to Use:[/bold yellow]")
+        self.console.print("  • Simply type your prompt and press [bold]Ctrl+D[/bold] or [bold]Meta+Enter[/bold] to submit")
+        self.console.print("  • Your prompt will be enhanced using AI and displayed")
+        self.console.print("  • Enhanced prompts are automatically copied to clipboard")
+        self.console.print("  • Supports multiline input - paste long texts freely")
+        
+        # Styles section
+        current_style = self.enhancement_styles[self.config.current_style]
+        self.console.print(f"\n[bold yellow]🎨 Current Style:[/bold yellow] [bold]{current_style['name']}[/bold]")
+        self.console.print(f"  {current_style['description']}")
+        
+        self.console.print("\n[bold yellow]🎨 Available Styles:[/bold yellow]")
+        for style_key, style_info in self.enhancement_styles.items():
+            marker = "→" if style_key == self.config.current_style else " "
+            self.console.print(f"  {marker} [bold]{style_info['name']}[/bold]: {style_info['description']}")
+        
+        # Environment info
+        detected_language = self.language_detector.detect_language()
+        if detected_language:
+            self.console.print(f"\n[bold yellow]🌍 Detected Environment:[/bold yellow] [green]{detected_language.title()}[/green]")
+        
+        # Tips section
+        self.console.print(f"\n[bold yellow]💰 Tips:[/bold yellow]")
+        self.console.print("  • Use [cyan]/style[/cyan] to experiment with different enhancement approaches")
+        self.console.print("  • Run [cyan]pmpt config[/cyan] in terminal to change providers and settings")
+        self.console.print("  • Environment detection helps tailor enhancements to your project")
+        self.console.print("  • Run [cyan]pmpt update[/cyan] in terminal to check for updates")
+        
+        self.console.print(f"\n[dim]Version: {__version__}[/dim]")
+        self.console.print()
+
+    def _show_version(self):
+        """Show version information"""
+        self.console.print(f"\n[bold cyan]🚀 PMPT CLI[/bold cyan]")
+        self.console.print(f"[bold]Version:[/bold] {__version__}")
+        self.console.print(f"[dim]Run [cyan]pmpt update[/cyan] to check for updates[/dim]")
+        self.console.print()
+
     async def _get_user_prompt(self) -> Optional[str]:
         """Get prompt from user"""
         try:
@@ -329,17 +392,23 @@ class PromptEnhancerCLI:
             
             if user_input.lower() == '/quit':
                 return None
-            elif user_input.lower() == '/config':
-                await self._configure_provider()
-                return ""
             elif user_input.lower() == '/style':
                 await self._select_style()
+                return ""
+            elif user_input.lower() == '/help':
+                self._show_help()
+                return ""
+            elif user_input.lower() == '/version':
+                self._show_version()
                 return ""
             # Legacy support for old commands
             elif user_input.lower() == 'quit':
                 return None
-            elif user_input.lower() == 'config':
-                await self._configure_provider()
+            elif user_input.lower() == 'help':
+                self._show_help()
+                return ""
+            elif user_input.lower() == 'version':
+                self._show_version()
                 return ""
             
             return user_input if user_input else ""
@@ -349,8 +418,8 @@ class PromptEnhancerCLI:
         except EOFError:
             return None
     
-    async def _enhance_prompt(self, user_prompt: str) -> Optional[str]:
-        """Enhance user prompt using AI"""
+    async def _enhance_prompt_stream(self, user_prompt: str) -> Optional[str]:
+        """Enhance user prompt using AI with streaming"""
         if not user_prompt:
             return ""
         
@@ -364,27 +433,19 @@ class PromptEnhancerCLI:
             if language_context:
                 enhanced_system_prompt += f" The user is working on a {language_context}, so consider this context when enhancing their prompt."
             
-            with self.console.status(f"[bold green]Enhancing prompt ({current_style['name']})..."):
-                enhanced = await client.enhance_prompt(user_prompt, enhanced_system_prompt)
+            # Show label first
+            self.console.print(f"\n[bold green]Enhanced Prompt ({current_style['name']}):[/bold green]")
             
-            return enhanced
+            # Stream the response
+            enhanced_prompt = ""
+            async for chunk in client.enhance_prompt_stream(user_prompt, enhanced_system_prompt):
+                self.console.print(chunk, end="")
+                enhanced_prompt += chunk
+            
+            self.console.print()  # New line after streaming
+            return enhanced_prompt
             
         except Exception as e:
             self.console.print(f"[red]Enhancement failed: {e}[/red]")
             return None
     
-    def _display_enhanced_prompt(self, enhanced_prompt: str):
-        """Display the enhanced prompt"""
-        current_style = self.enhancement_styles[self.config.current_style]
-        
-        # Create white text for the prompt content
-        styled_prompt = Text(enhanced_prompt, style="white")
-        
-        panel = Panel(
-            styled_prompt,
-            title=f"Enhanced Prompt ({current_style['name']})",
-            border_style="green",
-            title_align="left"
-        )
-        self.console.print("\n")
-        self.console.print(panel)

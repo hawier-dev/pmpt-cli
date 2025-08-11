@@ -7,7 +7,7 @@ from typing import Optional, Dict, List
 class LanguageDetector:
     """Detects programming language based on file extensions in current directory"""
     
-    # Language detection patterns
+    # Programming languages only (no config/markup files)
     LANGUAGE_PATTERNS = {
         'python': ['.py', '.pyx', '.pyi', '.pyw'],
         'javascript': ['.js', '.jsx', '.mjs', '.cjs'],
@@ -28,15 +28,6 @@ class LanguageDetector:
         'matlab': ['.m', '.mlx'],
         'shell': ['.sh', '.bash', '.zsh', '.fish'],
         'powershell': ['.ps1', '.psd1', '.psm1'],
-        'html': ['.html', '.htm', '.xhtml'],
-        'css': ['.css', '.scss', '.sass', '.less'],
-        'sql': ['.sql', '.sqlite', '.db'],
-        'yaml': ['.yml', '.yaml'],
-        'json': ['.json', '.jsonl'],
-        'xml': ['.xml', '.xsd', '.xsl'],
-        'markdown': ['.md', '.markdown', '.mdown'],
-        'dockerfile': ['Dockerfile', '.dockerfile'],
-        'makefile': ['Makefile', 'makefile', '.make'],
         'flutter': ['.dart', 'pubspec.yaml', 'flutter.yaml'],
         'react': ['.jsx', '.tsx', 'package.json'],
         'vue': ['.vue'],
@@ -60,9 +51,9 @@ class LanguageDetector:
         'laravel': ['artisan', 'composer.json', 'app/', 'routes/'],
         'rails': ['Gemfile', 'config.ru', 'app/', 'config/'],
         'spring': ['pom.xml', 'src/main/java/', 'application.properties'],
-        'node': ['package.json', 'node_modules/', 'index.js'],
-        'docker': ['Dockerfile', 'docker-compose.yml', '.dockerignore']
+        'node': ['package.json', 'node_modules/', 'index.js']
     }
+    
     
     def __init__(self, directory: str = None):
         self.directory = Path(directory) if directory else Path.cwd()
