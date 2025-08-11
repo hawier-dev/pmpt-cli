@@ -18,7 +18,7 @@ setup(
     python_requires=">=3.8",
     entry_points={
         "console_scripts": [
-            "pmpt=main:main",
+            "pmpt=main:cli",
         ],
     },
     author="hawier-dev",
