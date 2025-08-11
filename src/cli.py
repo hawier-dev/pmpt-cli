@@ -59,17 +59,19 @@ class PromptEnhancerCLI:
             }
         }
         
-        # Create command completer
+        # Create command and file completer
         from prompt_toolkit.completion import Completer, Completion
+        import os
+        import glob
         
-        class CommandCompleter(Completer):
+        class CommandAndFileCompleter(Completer):
             def __init__(self):
                 self.commands = ['/help', '/style', '/quit', '/version']
             
             def get_completions(self, document, complete_event):
                 text_before_cursor = document.text_before_cursor
                 
-                # Only complete if line starts with /
+                # Complete commands if line starts with /
                 if text_before_cursor.startswith('/'):
                     for command in self.commands:
                         if command.startswith(text_before_cursor):
@@ -77,8 +79,62 @@ class PromptEnhancerCLI:
                                 command,
                                 start_position=-len(text_before_cursor)
                             )
+                
+                # Complete files if @ is in the text
+                elif '@' in text_before_cursor:
+                    # Find the last @ position
+                    at_pos = text_before_cursor.rfind('@')
+                    file_partial = text_before_cursor[at_pos + 1:]
+                    
+                    # Get all files in current directory and subdirectories
+                    try:
+                        # Get all files recursively
+                        all_files = []
+                        for root, dirs, files in os.walk('.'):
+                            # Skip hidden directories and common build/cache directories
+                            dirs[:] = [d for d in dirs if not d.startswith('.') and d not in ['node_modules', '__pycache__', 'venv', 'env', 'build', 'dist']]
+                            
+                            for file in files:
+                                if not file.startswith('.'):  # Skip hidden files
+                                    # Get relative path
+                                    rel_path = os.path.relpath(os.path.join(root, file), '.')
+                                    if rel_path.startswith('./'):
+                                        rel_path = rel_path[2:]
+                                    all_files.append(rel_path)
+                        
+                        # Filter files based on partial input
+                        if file_partial:
+                            # Match by filename or path
+                            matching_files = []
+                            for file_path in all_files:
+                                filename = os.path.basename(file_path)
+                                # Match by filename or full path
+                                if (file_partial.lower() in filename.lower() or 
+                                    file_partial.lower() in file_path.lower()):
+                                    matching_files.append(file_path)
+                            
+                            # Sort by relevance: exact filename matches first, then path matches
+                            matching_files.sort(key=lambda f: (
+                                not os.path.basename(f).lower().startswith(file_partial.lower()),
+                                not f.lower().startswith(file_partial.lower()),
+                                f
+                            ))
+                        else:
+                            # No partial input, show all files (limited to first 20)
+                            matching_files = sorted(all_files)[:20]
+                        
+                        # Yield completions
+                        for file_path in matching_files[:10]:  # Limit to 10 suggestions
+                            yield Completion(
+                                file_path,
+                                start_position=-len(file_partial),
+                                display=f"@{file_path}"
+                            )
+                    
+                    except Exception:
+                        pass  # Silently ignore file system errors
         
-        completer = CommandCompleter()
+        completer = CommandAndFileCompleter()
         
         # Create prompt session with multiline support for main prompts
         self.prompt_session = PromptSession(
