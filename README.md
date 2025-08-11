@@ -1,4 +1,4 @@
-# PMPT CLI
+# PMPT
 
 AI-powered prompt enhancement tool that improves your prompts using OpenAI, Anthropic, and OpenRouter APIs.
 
