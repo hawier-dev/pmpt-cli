@@ -42,8 +42,8 @@ class PromptEnhancerCLI:
             "gentle": {
                 "name": "Gentle",
                 "color": "#90EE90",
-                "description": "Light syntax, grammar and clarity improvements without changing tone",
-                "prompt": "Gently improve the syntax, grammar and clarity of this prompt while maintaining the original tone and intent. Fix language errors and make it more precise, but don't significantly change the content. Return ONLY the enhanced prompt."
+                "description": "Improves clarity, adds helpful details and context while preserving original intent",
+                "prompt": "Enhance this prompt by improving its clarity, grammar, and precision while keeping the original intent unchanged. Add helpful context, relevant details, and specific examples that make the request clearer and more actionable. Fix any language errors and make the prompt more professional and well-structured, but preserve the user's core goal and tone. Return ONLY the enhanced prompt."
             },
             "structured": {
                 "name": "Structured", 
