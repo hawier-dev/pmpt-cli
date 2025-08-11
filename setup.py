@@ -16,9 +16,10 @@ setup(
         "click>=8.0.0",
     ],
     python_requires=">=3.8",
+    py_modules=['pmpt_main'],
     entry_points={
         "console_scripts": [
-            "pmpt=main:main",
+            "pmpt=pmpt_main:main",
         ],
     },
     author="hawier-dev",
