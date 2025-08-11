@@ -23,19 +23,15 @@ Run the installation script:
 curl -fsSL https://raw.githubusercontent.com/hawier-dev/pmpt-cli/main/install.sh | bash
 ```
 
-### Windows (PowerShell)
+### Windows
 
-Run the PowerShell installation script:
+Download the latest `pmpt-setup.exe` from [Releases](https://github.com/hawier-dev/pmpt-cli/releases) and run it. 
 
-```powershell
-iwr -useb https://raw.githubusercontent.com/hawier-dev/pmpt-cli/main/install.ps1 | iex
-```
-
-Or run with force overwrite (if already installed):
-
-```powershell
-iwr -useb https://raw.githubusercontent.com/hawier-dev/pmpt-cli/main/install.ps1 | iex -ArgumentList "-Force"
-```
+The installer will:
+- Install PMPT CLI to your system
+- Add it to your PATH automatically  
+- Create Start Menu shortcuts
+- Allow easy uninstallation via Control Panel
 
 ### Manual Installation
 

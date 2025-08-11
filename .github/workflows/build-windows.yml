@@ -37,7 +37,7 @@ jobs:
 
     - name: Build executable with PyInstaller
       run: |
-        pyinstaller --onefile --name pmpt --console --clean --noconfirm main.py
+        pyinstaller --onefile --name pmpt --console --clean --noconfirm --collect-all click --collect-all rich --collect-all prompt_toolkit --collect-all questionary --collect-all openai --collect-all anthropic --collect-all aiohttp main.py
 
     - name: Create placeholder icon
       run: |
