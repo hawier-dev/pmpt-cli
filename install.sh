@@ -64,7 +64,7 @@ echo -e "${BLUE}Creating wrapper script...${NC}"
 cat > "$WRAPPER_SCRIPT" << EOF
 #!/bin/bash
 source "$INSTALL_DIR/venv/bin/activate"
-exec python "$INSTALL_DIR/main.py" "\$@"
+exec python "$INSTALL_DIR/pmpt_main.py" "\$@"
 EOF
 
 chmod +x "$WRAPPER_SCRIPT"
