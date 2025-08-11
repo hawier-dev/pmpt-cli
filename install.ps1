@@ -1,12 +1,27 @@
-# PMPT CLI Windows Installation Script
-# PowerShell script to install PMPT CLI on Windows
+# PMPT CLI Windows Installation Script - Builds Executable
+# PowerShell script to build and install PMPT CLI executable on Windows
 
 param(
     [switch]$Force = $false
 )
 
-Write-Host "🚀 PMPT CLI Windows Installer" -ForegroundColor Cyan
-Write-Host "========================================" -ForegroundColor Cyan
+Write-Host "🚀 PMPT CLI Windows Installer (Executable Build)" -ForegroundColor Cyan
+Write-Host "================================================" -ForegroundColor Cyan
+
+# Set installation directories
+$installDir = "$env:LOCALAPPDATA\pmpt-cli"
+$binDir = "$env:LOCALAPPDATA\pmpt"
+
+# Check if already installed and not forcing
+if ((Test-Path "$binDir\pmpt.exe") -and -not $Force) {
+    Write-Host "⚠️  PMPT CLI is already installed" -ForegroundColor Yellow
+    Write-Host "Use -Force to reinstall" -ForegroundColor Yellow
+    $response = Read-Host "Do you want to continue? (y/N)"
+    if ($response -notmatch '^[Yy]') {
+        Write-Host "Installation cancelled" -ForegroundColor Red
+        exit 0
+    }
+}
 
 # Check if Python is installed
 Write-Host "🔍 Checking Python installation..." -ForegroundColor Yellow
@@ -39,23 +54,24 @@ try {
     exit 1
 }
 
-# Create installation directory
-$installDir = "$env:LOCALAPPDATA\pmpt-cli"
-Write-Host "📁 Installation directory: $installDir" -ForegroundColor Blue
+# Remove existing installation if forcing
+if ((Test-Path $installDir) -and $Force) {
+    Write-Host "🗑️  Removing existing source..." -ForegroundColor Yellow
+    Remove-Item $installDir -Recurse -Force -ErrorAction SilentlyContinue
+}
+if ((Test-Path $binDir) -and $Force) {
+    Write-Host "🗑️  Removing existing executable..." -ForegroundColor Yellow
+    Remove-Item $binDir -Recurse -Force -ErrorAction SilentlyContinue
+}
 
-if (Test-Path $installDir) {
-    if ($Force) {
-        Write-Host "🗑️  Removing existing installation..." -ForegroundColor Yellow
-        Remove-Item -Path $installDir -Recurse -Force
-    } else {
-        Write-Host "⚠️  Existing installation found. Use -Force to overwrite" -ForegroundColor Yellow
-        $response = Read-Host "Do you want to continue? (y/N)"
-        if ($response -notmatch '^[Yy]') {
-            Write-Host "Installation cancelled" -ForegroundColor Red
-            exit 1
-        }
-        Remove-Item -Path $installDir -Recurse -Force
-    }
+# Create installation directory
+Write-Host "📁 Creating installation directory..." -ForegroundColor Blue
+try {
+    New-Item -ItemType Directory -Path $installDir -Force | Out-Null
+    Write-Host "✅ Created: $installDir" -ForegroundColor Green
+} catch {
+    Write-Host "❌ Failed to create installation directory" -ForegroundColor Red
+    exit 1
 }
 
 # Clone repository
@@ -73,39 +89,91 @@ try {
 # Change to installation directory
 Set-Location $installDir
 
-# Install package in development mode
-Write-Host "📦 Installing PMPT CLI..." -ForegroundColor Blue
+# Install dependencies
+Write-Host "📦 Installing dependencies..." -ForegroundColor Blue
 try {
-    pip install -e .
+    pip install -r requirements.txt
     if ($LASTEXITCODE -ne 0) {
-        throw "pip install failed"
+        throw "Failed to install dependencies"
     }
 } catch {
-    Write-Host "❌ Failed to install package" -ForegroundColor Red
+    Write-Host "❌ Failed to install dependencies" -ForegroundColor Red
     exit 1
 }
 
-# Check if installation was successful
-Write-Host "🧪 Testing installation..." -ForegroundColor Blue
+# Install PyInstaller
+Write-Host "📦 Installing PyInstaller..." -ForegroundColor Blue
 try {
-    $pmptVersion = pmpt version 2>$null
-    if ($LASTEXITCODE -eq 0) {
-        Write-Host "✅ Installation successful!" -ForegroundColor Green
-        Write-Host $pmptVersion -ForegroundColor Green
-    } else {
-        throw "pmpt command not found"
+    pip install pyinstaller
+    if ($LASTEXITCODE -ne 0) {
+        throw "Failed to install PyInstaller"
     }
 } catch {
-    Write-Host "❌ Installation verification failed" -ForegroundColor Red
-    Write-Host "The 'pmpt' command might not be in your PATH" -ForegroundColor Yellow
-    Write-Host "You may need to restart your terminal if this is a new installation" -ForegroundColor Yellow
+    Write-Host "❌ Failed to install PyInstaller" -ForegroundColor Red
+    exit 1
 }
 
-Write-Host "" 
-Write-Host "🎉 PMPT CLI Installation Complete!" -ForegroundColor Green
-Write-Host "========================================" -ForegroundColor Green
-Write-Host "• Run 'pmpt' to get started" -ForegroundColor White
-Write-Host "• Run 'pmpt --help' for help" -ForegroundColor White
-Write-Host "• Run 'pmpt config' to configure your API keys" -ForegroundColor White
-Write-Host ""
-Write-Host "Note: Updates work immediately, but new installations may require terminal restart" -ForegroundColor Yellow
+# Build executable
+Write-Host "🔨 Building executable..." -ForegroundColor Blue
+try {
+    pyinstaller --onefile --name pmpt --console --clean --noconfirm main.py
+    if ($LASTEXITCODE -ne 0) {
+        throw "PyInstaller failed"
+    }
+} catch {
+    Write-Host "❌ Failed to build executable" -ForegroundColor Red
+    exit 1
+}
+
+# Check if executable was created
+if (Test-Path "dist\pmpt.exe") {
+    $size = [math]::Round((Get-Item "dist\pmpt.exe").Length / 1MB, 1)
+    Write-Host "✅ Successfully built pmpt.exe ($size MB)" -ForegroundColor Green
+    
+    # Create bin directory
+    if (-not (Test-Path $binDir)) {
+        New-Item -ItemType Directory -Path $binDir -Force | Out-Null
+    }
+    
+    # Copy executable
+    Copy-Item "dist\pmpt.exe" "$binDir\pmpt.exe" -Force
+    Write-Host "📦 Installed executable to: $binDir\pmpt.exe" -ForegroundColor Green
+    
+    # Add to PATH if not already there
+    $userPath = [Environment]::GetEnvironmentVariable("Path", [EnvironmentVariableTarget]::User)
+    if ($userPath -notlike "*$binDir*") {
+        Write-Host "🔗 Adding to PATH..." -ForegroundColor Blue
+        [Environment]::SetEnvironmentVariable("Path", "$userPath;$binDir", [EnvironmentVariableTarget]::User)
+        Write-Host "✅ Added to PATH. Please restart your terminal." -ForegroundColor Green
+    } else {
+        Write-Host "✅ Already in PATH" -ForegroundColor Green
+    }
+    
+    # Test installation
+    Write-Host "🧪 Testing installation..." -ForegroundColor Blue
+    try {
+        & "$binDir\pmpt.exe" version
+        if ($LASTEXITCODE -eq 0) {
+            Write-Host "✅ Installation test passed" -ForegroundColor Green
+        } else {
+            throw "Test failed"
+        }
+    } catch {
+        Write-Host "⚠️  Executable created but test failed" -ForegroundColor Yellow
+        Write-Host "You may need to restart your terminal" -ForegroundColor Yellow
+    }
+    
+    Write-Host "" 
+    Write-Host "🎉 PMPT CLI Installation Complete!" -ForegroundColor Green
+    Write-Host "================================================" -ForegroundColor Green
+    Write-Host "• Executable: $binDir\pmpt.exe" -ForegroundColor White
+    Write-Host "• Run 'pmpt' from any directory to use the tool" -ForegroundColor White
+    Write-Host "• Run 'pmpt --help' for help" -ForegroundColor White
+    Write-Host "• Run 'pmpt config' to configure your API keys" -ForegroundColor White
+    Write-Host ""
+    Write-Host "Note: Restart your terminal if the command is not found" -ForegroundColor Yellow
+    
+} else {
+    Write-Host "❌ Build failed - executable not found" -ForegroundColor Red
+    exit 1
+}
