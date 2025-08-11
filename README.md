@@ -23,6 +23,22 @@ Run the installation script:
 curl -fsSL https://raw.githubusercontent.com/hawier-dev/pmpt-cli/main/install.sh | bash
 ```
 
+### Windows (PowerShell)
+
+Run the installation script in PowerShell (as Administrator recommended):
+
+```powershell
+# Option 1: Direct execution
+iwr -useb https://raw.githubusercontent.com/hawier-dev/pmpt-cli/main/install.ps1 | iex
+
+# Option 2: Download and run
+Invoke-WebRequest -Uri https://raw.githubusercontent.com/hawier-dev/pmpt-cli/main/install.ps1 -OutFile install.ps1
+.\install.ps1
+
+# Force reinstall if already installed
+.\install.ps1 -Force
+```
+
 ### Manual Installation
 
 ```bash
