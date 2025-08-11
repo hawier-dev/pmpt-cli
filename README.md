@@ -23,16 +23,6 @@ Run the installation script:
 curl -fsSL https://raw.githubusercontent.com/hawier-dev/pmpt-cli/main/install.sh | bash
 ```
 
-### Windows
-
-Download the latest `pmpt-setup.exe` from [Releases](https://github.com/hawier-dev/pmpt-cli/releases) and run it. 
-
-The installer will:
-- Install PMPT CLI to your system
-- Add it to your PATH automatically  
-- Create Start Menu shortcuts
-- Allow easy uninstallation via Control Panel
-
 ### Manual Installation
 
 ```bash
@@ -79,11 +69,6 @@ Located at `~/.pmpt-cli/config.json`:
 - **Python 3.8+** (add to PATH during installation)
 - **Git** (for installation scripts)
 - **API key** for chosen provider (OpenAI, Anthropic, OpenRouter, etc.)
-
-### Windows Users
-- Ensure Python is added to PATH during installation
-- Run PowerShell as Administrator if installation fails
-- Git for Windows: https://git-scm.com/download/win
 
 ## Development
 
