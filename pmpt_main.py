@@ -35,10 +35,8 @@ def version():
 
 @cli.command()
 def update():
-    """Check for updates and install if available"""
-    import subprocess
-    
-    async def check_and_update():
+    """Check for updates"""
+    async def check_for_update():
         checker = UpdateChecker()
         update_info = await checker.check_for_updates()
         
@@ -47,44 +45,14 @@ def update():
             if update_info['release_notes']:
                 click.echo(f"\n📝 Release Notes:\n{update_info['release_notes']}")
             
-            # Ask user if they want to update
-            if click.confirm("\n🔄 Do you want to update now?", default=True):
-                click.echo("📥 Downloading and installing update...")
-                try:
-                    import platform
-                    system = platform.system().lower()
-                    
-                    if system == "windows":
-                        # Use PowerShell script for Windows
-                        install_url = "https://raw.githubusercontent.com/hawier-dev/pmpt-cli/main/install.ps1"
-                        result = subprocess.run([
-                            "powershell", "-Command",
-                            f"Invoke-WebRequest -UseBasicParsing -Uri '{install_url}' | Invoke-Expression -ArgumentList '-Force'"
-                        ], check=True, capture_output=True, text=True)
-                        click.echo("✅ Update completed successfully!")
-                        click.echo("🎉 Update is ready to use immediately!")
-                    else:
-                        # Use Bash script for Linux/macOS
-                        install_url = "https://raw.githubusercontent.com/hawier-dev/pmpt-cli/main/install.sh"
-                        result = subprocess.run([
-                            "bash", "-c", f"curl -fsSL {install_url} | bash"
-                        ], check=True, capture_output=True, text=True)
-                        click.echo("✅ Update completed successfully!")
-                        click.echo("🎉 Update is ready to use immediately!")
-                        
-                except subprocess.CalledProcessError as e:
-                    click.echo(f"❌ Update failed: {e}", err=True)
-                    click.echo(f"📥 You can manually download from: {update_info['release_url']}")
-                except Exception as e:
-                    click.echo(f"❌ Update error: {e}", err=True)
-                    click.echo(f"📥 You can manually download from: {update_info['release_url']}")
-            else:
-                click.echo(f"📥 You can manually update later from: {update_info['release_url']}")
+            click.echo(f"\n🔄 To update, run:")
+            click.echo(f"pip install --upgrade pmpt-cli")
+            click.echo(f"\n📥 Or download manually from: {update_info['release_url']}")
         else:
             click.echo(f"✅ You're running the latest version ({__version__})")
     
     try:
-        asyncio.run(check_and_update())
+        asyncio.run(check_for_update())
     except Exception as e:
         click.echo(f"❌ Failed to check for updates: {e}", err=True)
 
