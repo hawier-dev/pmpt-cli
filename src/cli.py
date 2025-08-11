@@ -80,10 +80,16 @@ class PromptEnhancerCLI:
         
         completer = CommandCompleter()
         
-        # Create prompt session with multiline support and completion
+        # Create prompt session with multiline support for main prompts
         self.prompt_session = PromptSession(
             multiline=True,
             completer=completer
+        )
+        
+        # Create single-line prompt session for configuration inputs
+        self.config_prompt_session = PromptSession(
+            multiline=False,
+            completer=None
         )
     
     async def run(self):
@@ -219,7 +225,7 @@ class PromptEnhancerCLI:
             # Configure provider or custom URL
             if provider_choice == "custom":
                 self.console.print("\n[bold cyan]Custom Provider Configuration[/bold cyan]")
-                base_url = await self.prompt_session.prompt_async("Enter base URL: ", is_password=False)
+                base_url = await self.config_prompt_session.prompt_async("Enter base URL: ", is_password=False)
                 base_url = base_url.strip()
                 
                 # Remove /chat/completions if user accidentally included it
@@ -241,7 +247,7 @@ class PromptEnhancerCLI:
             
             # Step 2: Get API key
             self.console.print("\n[bold cyan]Step 2: API Key[/bold cyan]")
-            api_key = await self.prompt_session.prompt_async("Enter your API key: ", is_password=True)
+            api_key = await self.config_prompt_session.prompt_async("Enter your API key: ", is_password=True)
             api_key = api_key.strip()
             if not api_key:
                 self.console.print("[red]API key is required[/red]")
@@ -250,7 +256,7 @@ class PromptEnhancerCLI:
             # Step 3: Get model
             self.console.print("\n[bold cyan]Step 3: Model Name[/bold cyan]")
             
-            model = await self.prompt_session.prompt_async("Enter model name: ", is_password=False)
+            model = await self.config_prompt_session.prompt_async("Enter model name: ", is_password=False)
             model = model.strip()
             if not model:
                 self.console.print("[red]Model is required[/red]")
