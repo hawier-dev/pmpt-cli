@@ -15,13 +15,29 @@ AI-powered prompt enhancement tool that improves your prompts using OpenAI, Anth
 
 ## Installation
 
+### Linux/macOS (Bash)
+
 Run the installation script:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/hawier-dev/pmpt-cli/main/install.sh | bash
 ```
 
-Or install manually:
+### Windows (PowerShell)
+
+Run the PowerShell installation script:
+
+```powershell
+iwr -useb https://raw.githubusercontent.com/hawier-dev/pmpt-cli/main/install.ps1 | iex
+```
+
+Or run with force overwrite (if already installed):
+
+```powershell
+iwr -useb https://raw.githubusercontent.com/hawier-dev/pmpt-cli/main/install.ps1 | iex -ArgumentList "-Force"
+```
+
+### Manual Installation
 
 ```bash
 git clone https://github.com/hawier-dev/pmpt-cli.git
@@ -64,8 +80,14 @@ Located at `~/.pmpt-cli/config.json`:
 
 ## Requirements
 
-- Python 3.8+
-- API key for chosen provider
+- **Python 3.8+** (add to PATH during installation)
+- **Git** (for installation scripts)
+- **API key** for chosen provider (OpenAI, Anthropic, OpenRouter, etc.)
+
+### Windows Users
+- Ensure Python is added to PATH during installation
+- Run PowerShell as Administrator if installation fails
+- Git for Windows: https://git-scm.com/download/win
 
 ## Development
 
