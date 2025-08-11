@@ -51,16 +51,27 @@ def update():
             if click.confirm("\n🔄 Do you want to update now?", default=True):
                 click.echo("📥 Downloading and installing update...")
                 try:
-                    # Run the install script from GitHub
-                    install_url = "https://raw.githubusercontent.com/hawier-dev/pmpt-cli/main/install.sh"
-                    result = subprocess.run(
-                        ["bash", "-c", f"curl -fsSL {install_url} | bash"],
-                        check=True,
-                        capture_output=True,
-                        text=True
-                    )
-                    click.echo("✅ Update completed successfully!")
-                    click.echo("🎉 Please restart your terminal or run 'source ~/.bashrc' to use the updated version.")
+                    import platform
+                    system = platform.system().lower()
+                    
+                    if system == "windows":
+                        # Use PowerShell script for Windows
+                        install_url = "https://raw.githubusercontent.com/hawier-dev/pmpt-cli/main/install.ps1"
+                        result = subprocess.run([
+                            "powershell", "-Command",
+                            f"Invoke-WebRequest -UseBasicParsing -Uri '{install_url}' | Invoke-Expression -ArgumentList '-Force'"
+                        ], check=True, capture_output=True, text=True)
+                        click.echo("✅ Update completed successfully!")
+                        click.echo("🎉 Update is ready to use immediately!")
+                    else:
+                        # Use Bash script for Linux/macOS
+                        install_url = "https://raw.githubusercontent.com/hawier-dev/pmpt-cli/main/install.sh"
+                        result = subprocess.run([
+                            "bash", "-c", f"curl -fsSL {install_url} | bash"
+                        ], check=True, capture_output=True, text=True)
+                        click.echo("✅ Update completed successfully!")
+                        click.echo("🎉 Update is ready to use immediately!")
+                        
                 except subprocess.CalledProcessError as e:
                     click.echo(f"❌ Update failed: {e}", err=True)
                     click.echo(f"📥 You can manually download from: {update_info['release_url']}")
