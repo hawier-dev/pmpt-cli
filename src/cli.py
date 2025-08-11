@@ -144,9 +144,9 @@ class PromptEnhancerCLI:
             """Submit on Enter"""
             event.app.exit(result=event.app.current_buffer.text)
         
-        @bindings.add('meta-enter')
+        @bindings.add('escape', 'enter')  # Alt+Enter
         def _(event):
-            """New line on Meta+Enter"""
+            """New line on Alt+Enter"""
             event.current_buffer.insert_text('\n')
         
         # Create prompt session with multiline support for main prompts
@@ -231,7 +231,7 @@ class PromptEnhancerCLI:
             "[bold]How to use:[/bold]\n"
             "• Enter your prompt and get an enhanced version\n"
             "• [yellow]Enter[/yellow] - Process prompt\n"
-            "• [yellow]Meta+Enter[/yellow] - New line\n\n"
+            "• [yellow]Alt+Enter[/yellow] - New line\n\n"
             "[bold]Available commands:[/bold]\n"
             "• [green]/help[/green] - Show detailed help\n"
             "• [green]/style[/green] - Change enhancement style\n"
