@@ -136,10 +136,24 @@ class PromptEnhancerCLI:
         
         completer = CommandAndFileCompleter()
         
+        # Create key bindings for custom Enter behavior
+        bindings = KeyBindings()
+        
+        @bindings.add('enter')
+        def _(event):
+            """Submit on Enter"""
+            event.app.exit(result=event.app.current_buffer.text)
+        
+        @bindings.add('meta-enter')
+        def _(event):
+            """New line on Meta+Enter"""
+            event.current_buffer.insert_text('\n')
+        
         # Create prompt session with multiline support for main prompts
         self.prompt_session = PromptSession(
             multiline=True,
-            completer=completer
+            completer=completer,
+            key_bindings=bindings
         )
         
         # Create single-line prompt session for configuration inputs
@@ -216,8 +230,8 @@ class PromptEnhancerCLI:
             f"[dim]{subtitle}[/dim]\n\n"
             "[bold]How to use:[/bold]\n"
             "• Enter your prompt and get an enhanced version\n"
-            "• [yellow]Enter[/yellow] - New line\n"
-            "• [yellow]Meta+Enter[/yellow] - Process prompt\n\n"
+            "• [yellow]Enter[/yellow] - Process prompt\n"
+            "• [yellow]Meta+Enter[/yellow] - New line\n\n"
             "[bold]Available commands:[/bold]\n"
             "• [green]/help[/green] - Show detailed help\n"
             "• [green]/style[/green] - Change enhancement style\n"
