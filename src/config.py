@@ -30,7 +30,11 @@ class Config:
     def get_base_url(self) -> str:
         """Get effective base URL"""
         if self.base_url:
-            return self.base_url
+            url = self.base_url
+            # Remove /chat/completions if it was accidentally included
+            if url.endswith('/chat/completions'):
+                url = url[:-len('/chat/completions')]
+            return url
         if self.provider and self.provider in PROVIDERS:
             return PROVIDERS[self.provider]["base_url"]
         return "https://api.openai.com/v1"
