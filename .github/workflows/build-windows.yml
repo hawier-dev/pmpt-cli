@@ -39,10 +39,9 @@ jobs:
       run: |
         pyinstaller --onefile --name pmpt --console --clean --noconfirm main.py
 
-    - name: Create icon file
+    - name: Create placeholder icon
       run: |
-        pip install Pillow
-        python create-icon.py
+        echo "" > icon.ico
 
     - name: Setup Inno Setup
       run: |
