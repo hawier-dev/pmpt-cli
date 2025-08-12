@@ -42,14 +42,20 @@ class PromptEnhancerCLI:
             "gentle": {
                 "name": "Gentle",
                 "color": "#90EE90",
-                "description": "Creates a polished, professional prompt while preserving the original intent",
-                "prompt": "Transform this prompt into a clear, well-structured, and professional version while keeping the same core request. Fix grammar, improve word choice, add useful context or format specifications, and make it sound polished and articulate. Keep it concise but elevate the language quality and clarity. Maintain the original intent but present it in a more refined way. Return ONLY the enhanced prompt."
+                "description": "Makes minimal alterations, focusing on minor grammatical corrections",
+                "prompt": "Make minimal changes to this prompt. Focus only on minor grammatical corrections and subtle rephrasing without changing the core intent or structure. Preserve as much of the user's original phrasing as possible. Return ONLY the enhanced prompt."
+            },
+            "enhanced": {
+                "name": "Enhanced",
+                "color": "#FFA500",
+                "description": "Strikes a balance with moderate improvements and added clarity",
+                "prompt": "Apply moderate improvements to this prompt. Use better word choice, minor structural adjustments, and add some useful context or clarity without a complete overhaul. Enhance readability and professionalism while maintaining a clear connection to the original input. Return ONLY the enhanced prompt."
             },
             "structured": {
                 "name": "Structured", 
                 "color": "#4169E1",
-                "description": "Improves structure with Markdown formatting and logical layout",
-                "prompt": "Rewrite this prompt with better structure using Markdown formatting. Organize content logically with headers, lists, highlights and sections. Keep all important content but present it in a clearer and more organized way. Return ONLY the enhanced prompt."
+                "description": "Extensively reformats with detailed elaboration and professional language",
+                "prompt": "Extensively reformat and enhance this prompt. Apply significant restructuring, detailed elaboration, add context and formatting specifications (e.g., code block formatting, type hints). Use professional language and aim for a highly polished and articulate output. Return ONLY the enhanced prompt."
             },
             "creative": {
                 "name": "Creative",
@@ -80,27 +86,67 @@ class PromptEnhancerCLI:
                                 start_position=-len(text_before_cursor)
                             )
                 
-                # Complete files if @ is in the text
+                # Complete files if @ is in the text - only when environment is detected
                 elif '@' in text_before_cursor:
+                    # Check if we're in a development environment before showing file suggestions
+                    has_dev_files = any(os.path.exists(f) for f in [
+                        'requirements.txt', 'package.json', 'Cargo.toml', 'pom.xml', 
+                        'setup.py', 'pyproject.toml', '.gitignore', 'Makefile'
+                    ])
+                    
+                    if not has_dev_files:
+                        return  # Don't show file suggestions outside development environments
+                    
                     # Find the last @ position
                     at_pos = text_before_cursor.rfind('@')
                     file_partial = text_before_cursor[at_pos + 1:]
                     
-                    # Get all files in current directory and subdirectories
+                    # Get file list for suggestions
                     try:
-                        # Get all files recursively
                         all_files = []
+                        file_count = 0
+                        max_files = 200  # Increased limit for file processing
+                        max_depth = 4    # Allow deeper directory traversal
+                        
                         for root, dirs, files in os.walk('.'):
+                            # Calculate current depth
+                            depth = root.replace('.', '').count(os.sep)
+                            if depth >= max_depth:
+                                dirs.clear()  # Don't go deeper
+                                continue
+                                
                             # Skip hidden directories and common build/cache directories
-                            dirs[:] = [d for d in dirs if not d.startswith('.') and d not in ['node_modules', '__pycache__', 'venv', 'env', 'build', 'dist']]
+                            dirs[:] = [d for d in dirs if not d.startswith('.') and d not in ['node_modules', '__pycache__', 'venv', 'env', 'build', 'dist', '.pytest_cache', 'htmlcov']]
                             
                             for file in files:
-                                if not file.startswith('.'):  # Skip hidden files
+                                if file_count >= max_files:
+                                    break
+                                    
+                                # Skip hidden files and certain file types
+                                if (not file.startswith('.') and 
+                                    not file.endswith(('.pyc', '.pyo', '.log', '.tmp', '.cache')) and
+                                    file not in ['__pycache__']):
+                                    
                                     # Get relative path
                                     rel_path = os.path.relpath(os.path.join(root, file), '.')
                                     if rel_path.startswith('./'):
                                         rel_path = rel_path[2:]
                                     all_files.append(rel_path)
+                                    file_count += 1
+                            
+                            if file_count >= max_files:
+                                break
+                        
+                        # Prioritize certain file types for better relevance
+                        def get_file_priority(file_path):
+                            name = file_path.lower()
+                            # Higher priority (lower number) for common development files
+                            if name.endswith(('.py', '.js', '.ts', '.jsx', '.tsx', '.html', '.css', '.md', '.txt', '.json', '.yml', '.yaml')):
+                                return 1
+                            elif name.endswith(('.xml', '.cfg', '.ini', '.conf', '.toml')):
+                                return 2
+                            else:
+                                return 3
                         
                         # Filter files based on partial input
                         if file_partial:
@@ -113,18 +159,20 @@ class PromptEnhancerCLI:
                                     file_partial.lower() in file_path.lower()):
                                     matching_files.append(file_path)
                             
-                            # Sort by relevance: exact filename matches first, then path matches
+                            # Sort by relevance: exact filename matches first, then priority, then alphabetical
                             matching_files.sort(key=lambda f: (
                                 not os.path.basename(f).lower().startswith(file_partial.lower()),
                                 not f.lower().startswith(file_partial.lower()),
+                                get_file_priority(f),
                                 f
                             ))
                         else:
-                            # No partial input, show all files (limited to first 20)
-                            matching_files = sorted(all_files)[:20]
+                            # No partial input, show prioritized files
+                            all_files.sort(key=lambda f: (get_file_priority(f), f))
+                            matching_files = all_files[:30]  # Show up to 30 files when no filter
                         
-                        # Yield completions
-                        for file_path in matching_files[:10]:  # Limit to 10 suggestions
+                        # Yield completions - show up to 30 suggestions
+                        for file_path in matching_files[:30]:  # Increased to 30 suggestions max
                             yield Completion(
                                 file_path,
                                 start_position=-len(file_partial),
@@ -161,6 +209,73 @@ class PromptEnhancerCLI:
             multiline=False,
             completer=None
         )
+    
+    def _extract_file_references(self, prompt: str) -> list:
+        """Extract file references (@filepath) from prompt text"""
+        import re
+        
+        # Match @filepath patterns - handle both @filename and @path/to/file
+        pattern = r'@([^\s@]+(?:/[^\s@]*)*)'
+        matches = re.findall(pattern, prompt)
+        
+        # Filter out duplicates and validate files exist
+        file_paths = []
+        for match in matches:
+            if os.path.isfile(match):
+                file_paths.append(match)
+        
+        return file_paths
+    
+    def _read_file_content(self, file_path: str) -> str:
+        """Read and return file content with proper encoding handling"""
+        try:
+            # Try UTF-8 first
+            with open(file_path, 'r', encoding='utf-8') as f:
+                content = f.read()
+            return content
+        except UnicodeDecodeError:
+            # Fall back to other encodings if UTF-8 fails
+            encodings = ['latin-1', 'cp1252', 'iso-8859-1']
+            for encoding in encodings:
+                try:
+                    with open(file_path, 'r', encoding=encoding) as f:
+                        content = f.read()
+                    return content
+                except UnicodeDecodeError:
+                    continue
+            # If all encodings fail, read as binary and decode with errors ignored
+            with open(file_path, 'rb') as f:
+                content = f.read().decode('utf-8', errors='ignore')
+            return content
+        except Exception as e:
+            return f"[Error reading file {file_path}: {str(e)}]"
+    
+    def _integrate_file_context(self, prompt: str) -> str:
+        """Integrate file contents into the prompt context"""
+        file_references = self._extract_file_references(prompt)
+        
+        if not file_references:
+            return prompt
+        
+        # Build context from referenced files
+        file_contexts = []
+        for file_path in file_references:
+            content = self._read_file_content(file_path)
+            
+            # Truncate very large files to avoid token limits
+            if len(content) > 8000:  # Reasonable limit for context
+                content = content[:8000] + "\n... [File truncated for brevity]"
+            
+            file_context = f"--- File: {file_path} ---\n{content}\n--- End of {file_path} ---\n"
+            file_contexts.append(file_context)
+        
+        # Integrate file contexts with the original prompt
+        if file_contexts:
+            context_section = "\n".join(file_contexts)
+            enhanced_prompt = f"{prompt}\n\n[File Context for Reference:]\n{context_section}"
+            return enhanced_prompt
+        
+        return prompt
     
     async def run(self):
         """Main application loop"""
@@ -494,6 +609,14 @@ class PromptEnhancerCLI:
             return ""
         
         try:
+            # Integrate file context if @filepath references are found
+            integrated_prompt = self._integrate_file_context(user_prompt)
+            
+            # Show file integration info if files were referenced
+            file_references = self._extract_file_references(user_prompt)
+            if file_references:
+                self.console.print(f"[dim]🔗 Integrated {len(file_references)} file(s): {', '.join(file_references)}[/dim]")
+            
             client = APIClient(self.config)
             current_style = self.enhancement_styles[self.config.current_style]
             
@@ -503,12 +626,16 @@ class PromptEnhancerCLI:
             if language_context:
                 enhanced_system_prompt += f" The user is working on a {language_context}, so consider this context when enhancing their prompt."
             
+            # If files were integrated, add instruction to use the context
+            if file_references:
+                enhanced_system_prompt += " The user has provided file context that should inform and improve the enhanced prompt. Use the provided file contents to make the prompt more specific, relevant, and powerful."
+            
             # Show label first
             self.console.print(f"\n[bold green]Enhanced Prompt ({current_style['name']}):[/bold green]")
             
-            # Stream the response
+            # Stream the response using the integrated prompt
             enhanced_prompt = ""
-            async for chunk in client.enhance_prompt_stream(user_prompt, enhanced_system_prompt):
+            async for chunk in client.enhance_prompt_stream(integrated_prompt, enhanced_system_prompt):
                 self.console.print(chunk, end="")
                 enhanced_prompt += chunk
             
